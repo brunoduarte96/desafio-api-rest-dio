@@ -18,6 +18,6 @@ public class Director {
     private Long id;
     private String name;
 
-    @ManyToMany
-    private List<Animes>anime;
+    @ManyToMany(mappedBy = "directors")
+    private List<Animes> anime;
 }
