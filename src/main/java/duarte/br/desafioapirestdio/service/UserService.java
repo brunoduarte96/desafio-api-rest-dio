@@ -1,41 +1,40 @@
 package duarte.br.desafioapirestdio.service;
 
 import duarte.br.desafioapirestdio.model.Animes;
-import duarte.br.desafioapirestdio.model.Usuario;
+import duarte.br.desafioapirestdio.model.User;
 import duarte.br.desafioapirestdio.repository.AnimesRepository;
-import duarte.br.desafioapirestdio.repository.UsuarioRepository;
+import duarte.br.desafioapirestdio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UsuarioService {
+public class UserService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository usuarioRepository;
     @Autowired
     private AnimesRepository animesRepository;
 
 
-    public List<Usuario> getAllUsuarios() {
+    public List<User> getAllUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    public Optional<Usuario> getUsuariosById(Long id) {
+    public Optional<User> getUsuariosById(Long id) {
         return usuarioRepository.findById(id);
     }
 
-    public Usuario createUsuario(Usuario u) {
+    public User createUsuario(User u) {
         return usuarioRepository.save(u);
     }
 
-    public Optional<Usuario> updateUsuario(Long id, Usuario u) {
-        Optional<Usuario> usuarioNovo = usuarioRepository.findById(id);
+    public Optional<User> updateUsuario(Long id, User u) {
+        Optional<User> usuarioNovo = usuarioRepository.findById(id);
         if (usuarioNovo.isPresent()) {
-            Usuario usuario = usuarioNovo.get();
+            User usuario = usuarioNovo.get();
             usuario.setUsername(u.getUsername());
             usuario.setEmail(u.getEmail());
             usuario.setPassword(u.getPassword());
@@ -49,12 +48,12 @@ public class UsuarioService {
     public void delete(Long id) {
         usuarioRepository.deleteById(id);
     }
-    public Optional<Usuario> addAnimeToUsuario(Long usuarioId, String animeTitle) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
+    public Optional<User> addAnimeToUsuario(Long usuarioId, String animeTitle) {
+        Optional<User> usuarioOptional = usuarioRepository.findById(usuarioId);
         List<Animes> animesEncontrados = animesRepository.findByTitle(animeTitle);
 
         if (usuarioOptional.isPresent() && !animesEncontrados.isEmpty()) {
-            Usuario usuario = usuarioOptional.get();
+            User usuario = usuarioOptional.get();
 
             // Adicione os animes encontrados à lista de animes do usuário (se já não estiverem lá)
             List<Animes> animesDoUsuario = usuario.getAnimes();
