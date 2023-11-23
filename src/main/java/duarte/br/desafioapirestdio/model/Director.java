@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -18,6 +19,6 @@ public class Director {
     private Long id;
     private String name;
 
-    @ManyToMany(mappedBy = "directors")
-    private List<Animes> anime;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Animes> anime = new HashSet<>();
 }
