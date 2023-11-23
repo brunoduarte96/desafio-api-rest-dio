@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -20,8 +21,7 @@ public class Studio {
     private String foundation;
 
 
-    @ManyToMany(mappedBy = "studios")
-
-    private List<Animes> animes;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Animes> animes = new HashSet<>();
 
 }
