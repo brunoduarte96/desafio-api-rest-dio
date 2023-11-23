@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -17,8 +17,8 @@ public class AnimesDto {
     private String title;
     private String description;
     private String imageUrl;
-    private List<Director> directors;
-    private List<Studio> studios;
+    private Set<Director> directors;
+    private Set<Studio> studios;
 
     public AnimesDto(Animes entity) {
         this.id = entity.getId();
