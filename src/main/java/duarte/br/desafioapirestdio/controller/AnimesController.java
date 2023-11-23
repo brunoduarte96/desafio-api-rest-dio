@@ -1,5 +1,6 @@
 package duarte.br.desafioapirestdio.controller;
 
+import duarte.br.desafioapirestdio.dto.AnimesDto;
 import duarte.br.desafioapirestdio.model.Animes;
 import duarte.br.desafioapirestdio.service.AnimesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +20,14 @@ public class AnimesController {
     private AnimesService animesService;
 
     @GetMapping
-    public ResponseEntity<Page<Animes>> getAnimes(Pageable pageable) {
-        Page<Animes> page = animesService.listAll(pageable);
-        return new ResponseEntity<>(page, HttpStatus.OK);
+    public ResponseEntity<Page<AnimesDto>> getAnimes(Pageable pageable) {
+        Page<AnimesDto> page = animesService.listAll(pageable);
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{title}")
-    public ResponseEntity<List<Animes>> getByAnimeForName(@PathVariable String title) {
-        List<Animes> animes = animesService.findByName(title);
+    public ResponseEntity<List<AnimesDto>> getByAnimeForName(@PathVariable String title) {
+        List<AnimesDto> animes = animesService.findByName(title);
         if (!animes.isEmpty()) {
             return new ResponseEntity<>(animes, HttpStatus.OK);
         } else {
@@ -35,13 +36,13 @@ public class AnimesController {
     }
 
     @PostMapping
-    public ResponseEntity<Animes> createAnimes(@RequestBody Animes animes) {
-        Animes createanime = animesService.save(animes);
+    public ResponseEntity<AnimesDto> createAnimes(@RequestBody AnimesDto animesDto) {
+        AnimesDto createanime = animesService.save(animesDto);
         return new ResponseEntity<>(createanime, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Animes> updateAnime(@PathVariable Long id, @RequestBody Animes animes) {
+    public ResponseEntity<AnimesDto> updateAnime(@PathVariable Long id, @RequestBody AnimesDto animes) {
         animesService.update(id, animes);
         return ResponseEntity.ok(animes);
     }
