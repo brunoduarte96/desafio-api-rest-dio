@@ -7,7 +7,7 @@ INSERT INTO studio (foundation, location, name) VALUES ('Foundation 1', 'Locatio
 INSERT INTO studio (foundation, location, name) VALUES ('Foundation 2', 'Location 2', 'Studio 2');
 
 -- Inserção de dados na tabela 'animes'
-INSERT INTO animes (description, image_url, title) VALUES ('Anime 1 Description', 'Image URL 1', 'Anime 1');
+INSERT INTO animes (description, image_url, title) VALUES ('Anime 1 Description', 'Image URL 1', 'naruto');
 INSERT INTO animes (description, image_url, title) VALUES ('Anime 2 Description', 'Image URL 2', 'Anime 2');
 
 -- Inserção de dados na tabela 'anime_director'

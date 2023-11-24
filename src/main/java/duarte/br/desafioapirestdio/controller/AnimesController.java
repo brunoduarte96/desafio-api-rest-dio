@@ -1,7 +1,6 @@
 package duarte.br.desafioapirestdio.controller;
 
 import duarte.br.desafioapirestdio.dto.AnimesDto;
-import duarte.br.desafioapirestdio.model.Animes;
 import duarte.br.desafioapirestdio.service.AnimesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
