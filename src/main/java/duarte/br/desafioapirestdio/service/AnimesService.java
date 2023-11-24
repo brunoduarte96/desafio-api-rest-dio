@@ -5,7 +5,7 @@ import duarte.br.desafioapirestdio.model.Animes;
 import duarte.br.desafioapirestdio.repository.AnimesRepository;
 import duarte.br.desafioapirestdio.service.exceptions.DataBaseException;
 import duarte.br.desafioapirestdio.service.exceptions.ResourceNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AnimesService {
@@ -23,38 +22,39 @@ public class AnimesService {
     @Autowired
     private AnimesRepository animesRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Transactional(readOnly = true)
     public Page<AnimesDto> listAll(Pageable pageable) {
-        Page<Animes> animesPage = animesRepository.findAll(pageable);
-        return animesPage.map(this::convertToDto);
+        return animesRepository.findAll(pageable)
+                .map(animes -> modelMapper.map(animes, AnimesDto.class));
     }
 
     @Transactional(readOnly = true)
     public List<AnimesDto> findByName(String title) {
-        List<Animes> animes = animesRepository.findByTitle(title);
-
-        return animes.stream().map(this::convertToDto).collect(Collectors.toList());
+        return animesRepository.findByTitle(title).stream()
+                .map(animes -> modelMapper.map(animes, AnimesDto.class))
+                .toList();
     }
 
     @Transactional
     public AnimesDto save(AnimesDto animesDto) {
-        Animes entity = new Animes();
-        copyDtoToEntity(animesDto, entity);
-        entity = animesRepository.save(entity);
-        return convertToDto(entity);
+        Animes animes = modelMapper.map(animesDto, Animes.class);
+        Animes animesSave = animesRepository.save(animes);
+        return modelMapper.map(animesSave, AnimesDto.class);
 
     }
 
     @Transactional
     public AnimesDto update(Long id, AnimesDto animesDto) {
         try {
-            Animes entity = animesRepository.getReferenceById(id);
+            Animes entity = animesRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Animes com id " + id + " não encontrado"));
             copyDtoToEntity(animesDto, entity);
             entity = animesRepository.save(entity);
-            return new AnimesDto(entity);
-
-        } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            return modelMapper.map(entity, AnimesDto.class);
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException("O ID do anime não foi encontrado: " + id);
         }
     }
 
@@ -69,11 +69,6 @@ public class AnimesService {
         } catch (DataIntegrityViolationException e) {
             throw new DataBaseException("Falha na integridade referencial");
         }
-    }
-
-    private AnimesDto convertToDto(Animes animes) {
-        return new AnimesDto(animes.getId(), animes.getTitle(), animes.getDescription(), animes.getImageUrl(),
-                animes.getDirectors(), animes.getStudios());
     }
 
     private void copyDtoToEntity(AnimesDto dto, Animes entity) {
