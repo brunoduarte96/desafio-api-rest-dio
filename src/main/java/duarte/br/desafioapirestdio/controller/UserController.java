@@ -1,5 +1,6 @@
 package duarte.br.desafioapirestdio.controller;
 
+import duarte.br.desafioapirestdio.dto.UserAnimeDto;
 import duarte.br.desafioapirestdio.model.User;
 import duarte.br.desafioapirestdio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +21,21 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsuarios() {
-        List<User> usuarios = usuarioService.getAllUsuarios();
+    public ResponseEntity<List<UserAnimeDto>> getAllUsuarios() {
+        List<UserAnimeDto> usuarios = usuarioService.getAllUsuarios();
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getByUsuarioId(@PathVariable Long id) {
-        Optional<User> usuarios = usuarioService.getUsuariosById(id);
-        return usuarios.map(usuario -> new ResponseEntity<>(usuario, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<UserAnimeDto> getByUsuarioId(@PathVariable Long id) {
+        UserAnimeDto user = usuarioService.getUsuariosById(id);
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.OK);
+
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 
@@ -65,7 +72,7 @@ public class UserController {
             }
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Requisição inválida
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
 }

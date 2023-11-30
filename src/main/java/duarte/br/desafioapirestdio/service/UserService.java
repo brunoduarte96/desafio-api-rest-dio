@@ -1,11 +1,17 @@
 package duarte.br.desafioapirestdio.service;
 
+import duarte.br.desafioapirestdio.dto.UserAnimeDto;
 import duarte.br.desafioapirestdio.model.Animes;
 import duarte.br.desafioapirestdio.model.User;
 import duarte.br.desafioapirestdio.repository.AnimesRepository;
 import duarte.br.desafioapirestdio.repository.UserRepository;
+import duarte.br.desafioapirestdio.service.exceptions.DataBaseException;
+import duarte.br.desafioapirestdio.service.exceptions.ResourceNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,37 +23,55 @@ public class UserService {
     private UserRepository usuarioRepository;
     @Autowired
     private AnimesRepository animesRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
+    @Transactional(readOnly = true)
+    public List<UserAnimeDto> getAllUsuarios() {
+        List<User> usuarios = usuarioRepository.findAll();
+        return usuarios.stream()
+                .map(this::convertToUserAnimeDto)
+                .toList();
 
-    public List<User> getAllUsuarios() {
-        return usuarioRepository.findAll();
     }
 
-    public Optional<User> getUsuariosById(Long id) {
-        return usuarioRepository.findById(id);
+    @Transactional(readOnly = true)
+    public UserAnimeDto getUsuariosById(Long id) {
+        Optional<User> usuarios = usuarioRepository.findById(id);
+        return usuarios.map(this::convertToUserAnimeDto).orElse(null);
     }
 
-    public User createUsuario(User u) {
-        return usuarioRepository.save(u);
+    @Transactional
+    public User createUsuario(User user) {
+        return usuarioRepository.save(user);
     }
 
-    public Optional<User> updateUsuario(Long id, User u) {
-        Optional<User> usuarioNovo = usuarioRepository.findById(id);
-        if (usuarioNovo.isPresent()) {
-            User usuario = usuarioNovo.get();
-            usuario.setUsername(u.getUsername());
-            usuario.setEmail(u.getEmail());
-            usuario.setPassword(u.getPassword());
-            return Optional.of(usuarioRepository.save(usuario));
-        } else {
-            return Optional.empty();
+    @Transactional
+    public Optional<User> updateUsuario(Long id, User user) {
+        try {
+            User usuario = usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário com ID " + id + " não encontrado."));
+            modelMapper.getConfiguration().setSkipNullEnabled(true);
+            modelMapper.map(user, usuario);
+            User UpdatedUser = usuarioRepository.save(usuario);
+            return Optional.of(UpdatedUser);
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException("Erro ao atualizar usuário: " + e.getMessage());
         }
 
     }
 
+
     public void delete(Long id) {
-        usuarioRepository.deleteById(id);
+        if (!usuarioRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado");
+        }
+        try {
+            usuarioRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataBaseException("Falha na integridade referencial");
+        }
     }
+
     public Optional<User> addAnimeToUsuario(Long usuarioId, String animeTitle) {
         Optional<User> usuarioOptional = usuarioRepository.findById(usuarioId);
         List<Animes> animesEncontrados = animesRepository.findByTitle(animeTitle);
@@ -55,7 +79,6 @@ public class UserService {
         if (usuarioOptional.isPresent() && !animesEncontrados.isEmpty()) {
             User usuario = usuarioOptional.get();
 
-            // Adicione os animes encontrados à lista de animes do usuário (se já não estiverem lá)
             List<Animes> animesDoUsuario = usuario.getAnimes();
             for (Animes anime : animesEncontrados) {
                 if (!animesDoUsuario.contains(anime)) {
@@ -63,15 +86,19 @@ public class UserService {
                 }
             }
 
-            // Atualize a lista de animes do usuário
             usuario.setAnimes(animesDoUsuario);
-
-            // Salve o usuário atualizado no banco de dados
             return Optional.of(usuarioRepository.save(usuario));
         }
-
-        return Optional.empty(); // Usuário ou anime não encontrado
+        return Optional.empty();
     }
 
+    private UserAnimeDto convertToUserAnimeDto(User user) {
+        UserAnimeDto userAnimeDto = modelMapper.map(user, UserAnimeDto.class);
+        List<String> animeTitles = user.getAnimes().stream()
+                .map(Animes::getTitle)
+                .toList();
+        userAnimeDto.setAnimes(animeTitles);
+        return userAnimeDto;
+    }
 
 }
